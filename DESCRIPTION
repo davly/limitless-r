@@ -1,0 +1,25 @@
+Package: limitless
+Type: Package
+Title: Limitless Cohort R SDK -- Mirror-Mark v1 + LOUD-ONCE + UK GDPR Refs
+Version: 0.1.0
+Authors@R: c(
+    person("David", "Carson", email = "david@promptboy.dev", role = c("aut", "cre"))
+  )
+Description: Cohort-canonical R SDK port of the L43 Mirror-Mark v1 stamping
+    algorithm + R143 LOUD-ONCE-WARNING-FLAG primitive + R166 LIABILITY-FOOTER-CONST
+    + UK GDPR statutory references shipped across the wider Limitless ecosystem
+    (Go canonical foundation, Python, .NET, C++, Solidity, Rust, Erlang/OTP, C99,
+    Gleam, Racket, Idris, Fortran, D, Crystal cohort siblings). KAT-1 cross-
+    substrate firewall hex is byte-identical to the cohort canonical:
+    239a7d0d3f1bbe3a98aede01e2ad818c2db60b7177c02e2f015035b2b5b7dbca.
+License: Apache License (>= 2)
+Encoding: UTF-8
+LazyData: false
+Imports:
+    openssl (>= 2.0.0)
+Suggests:
+    testthat (>= 3.0.0)
+RoxygenNote: 7.3.0
+Config/testthat/edition: 3
+URL: https://github.com/davly/limitless-r
+BugReports: https://github.com/davly/limitless-r/issues
