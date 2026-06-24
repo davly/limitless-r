@@ -124,12 +124,27 @@ base64url_encode <- function(data) {
 
 #' Base64url-decode (RFC 4648 section 5) a character scalar to raw.
 #' Returns NULL on malformed input.
+#'
+#' Strict alphabet: only `[A-Za-z0-9_-]` are accepted (RFC 4648 section 5,
+#' unpadded). Any other character -- including whitespace, embedded newlines,
+#' `'='` padding, or std-base64 `'+' / '/'` -- yields NULL. This is a security
+#' boundary, not a nicety: `openssl::base64_decode` silently *ignores*
+#' characters outside the base64 alphabet (OpenSSL's PEM-heritage decoder
+#' skips newlines/whitespace), so without this guard a peer could submit a
+#' non-canonical mark string (e.g. with an embedded `\n`) that decodes to the
+#' SAME 40-byte body and PASSES `mm_verify`, breaking the cohort
+#' "byte-identical mark" invariant. Mirrors the alphabet check that
+#' `hex_to_bytes()` already enforces.
 #' @param s Encoded character scalar.
 #' @return A `raw` vector, or NULL on invalid input.
 #' @export
 base64url_decode <- function(s) {
   if (!is.character(s) || length(s) != 1L) return(NULL)
   if (nchar(s) == 0L) return(raw(0L))
+  # Reject any character outside the RFC 4648 section 5 base64url alphabet
+  # BEFORE decoding. openssl::base64_decode tolerates (skips) stray bytes,
+  # which would let a malleable/non-canonical mark verify true.
+  if (!grepl("^[A-Za-z0-9_-]*$", s)) return(NULL)
   # Convert url -> std: '-' -> '+', '_' -> '/'. Re-pad to multiple of 4.
   std <- chartr("-_", "+/", s)
   pad_needed <- (4L - (nchar(std) %% 4L)) %% 4L

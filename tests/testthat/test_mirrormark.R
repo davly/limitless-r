@@ -131,6 +131,28 @@ test_that("base64url_decode returns NULL on invalid input", {
   expect_null(base64url_decode("====="))  # remainder 1 => invalid
 })
 
+test_that("base64url_decode rejects out-of-alphabet characters (no openssl skip)", {
+  # OpenSSL's base64 decoder silently ignores whitespace/newlines; the strict
+  # alphabet guard must reject them so a malleable mark cannot decode to a
+  # canonical body. '+' and '/' are std-base64, not url-safe -> also rejected.
+  expect_null(base64url_decode("AAAA\nAAAA"))
+  expect_null(base64url_decode("AAAA AAAA"))
+  expect_null(base64url_decode("AB+/"))
+  expect_null(base64url_decode("AB=="))   # '=' padding is not part of the unpadded alphabet
+})
+
+test_that("mm_verify rejects a non-canonical mark with embedded whitespace (malleability)", {
+  corpus <- raw(32)
+  # Splice a newline into the canonical KAT-1 body; without the alphabet guard
+  # openssl would skip the '\n' and the tampered string would verify TRUE.
+  body_b64 <- substr(KAT1_MARK, nchar(MARK_PREFIX) + 1L, nchar(KAT1_MARK))
+  tampered <- paste0(MARK_PREFIX, substr(body_b64, 1L, 10L), "\n",
+                     substr(body_b64, 11L, nchar(body_b64)))
+  expect_error(mm_verify(tampered, corpus, raw(0L), raw(0L)),
+               "malformed mark")
+  expect_false(mm_verify_bool(tampered, corpus, raw(0L), raw(0L)))
+})
+
 # --- Marker class ---
 
 test_that("mm_marker constructs + signs/verifies", {
